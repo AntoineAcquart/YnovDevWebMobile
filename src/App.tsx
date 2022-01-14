@@ -4,6 +4,7 @@ import { Route } from "react-router-dom";
 import { initializeApp } from "firebase/app";
 import { useEffect, useState } from "react";
 import { SplashScreen } from "@capacitor/splash-screen";
+import { App as AppCapacitor, URLOpenListenerEvent } from "@capacitor/app";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
@@ -29,12 +30,13 @@ import { Menu } from "./components";
 import { useFirebaseLogin } from "./hooks";
 
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_apiKey,
-  authDomain: process.env.REACT_APP_authDomain,
-  projectId: process.env.REACT_APP_projectId,
-  storageBucket: process.env.REACT_APP_storageBucket,
-  messagingSenderId: process.env.REACT_APP_messagingSenderId,
-  appId: process.env.REACT_APP_appId,
+  apiKey: "AIzaSyD2tGjRNM3HadGCkKsHJK9kmpFKHKVmMWs",
+  authDomain: "firstapp-firebase-web-mobile.firebaseapp.com",
+  projectId: "firstapp-firebase-web-mobile",
+  storageBucket: "firstapp-firebase-web-mobile.appspot.com",
+  messagingSenderId: "993475565425",
+  appId: "1:993475565425:web:a2ffbf2a7dfbce4a8288d0",
+  measurementId: "G-LL6X4WQGY4"
 };
 
 const App: React.FC = () => {
@@ -52,6 +54,18 @@ const App: React.FC = () => {
       SplashScreen.hide();
     });
   }, [checkAuth]);
+
+  useEffect(() => {
+    AppCapacitor.addListener("appUrlOpen", (event: URLOpenListenerEvent) => {
+      // Example url: https://cours-ynov-175ee.web.app/id
+      // slug = /id
+      const slug = event.url.split(".app").pop();
+      alert(slug?.replace("/", ""));
+      // If no match, do nothing - let regular routing
+      // logic take over
+    });
+  }, []);
+
   console.log(`IONIC::::`, user);
   return (
     <IonApp>
@@ -67,7 +81,7 @@ const App: React.FC = () => {
               }
             />
             <Route path="/create" exact component={CreateTop} />
-            <Route path="/view/:title" exact component={ViewTop} />
+            <Route path="/view/:id" exact component={ViewTop} />
           </IonRouterOutlet>
         </IonSplitPane>
       </IonReactRouter>

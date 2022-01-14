@@ -20,35 +20,32 @@ import React, { useState, useEffect } from "react";
 import { RouteComponentProps } from "react-router";
 import { InAppBrowser } from "@ionic-native/in-app-browser";
 import { SocialSharing } from "@ionic-native/social-sharing";
-
 import { useTopList } from "../../../hooks";
 import { Top } from "../../../types";
 import { shareSocialOutline } from "ionicons/icons";
-
 type ViewTopProps = RouteComponentProps<{
-  title: string;
+  id: string;
 }>;
-
 const ViewTop: React.FC<ViewTopProps> = ({ match }) => {
   const {
-    params: { title },
+    params: { id },
   } = match;
-  const { findTopByTitle } = useTopList();
+  const { getLists, findTopById } = useTopList();
   const [top, setTop] = useState<Top | undefined>();
-
   const openLink = (link?: string) => {
     if (!link) return;
     InAppBrowser.create(link, "_blank");
   };
-
   const shareOnclick = () => {
     SocialSharing.share("Message", "Subject");
   };
-
   useEffect(() => {
-    setTop(findTopByTitle(title));
-  }, [title, findTopByTitle]);
-
+    findTopById(id).then((docSnap: any) => {
+      if (docSnap.exists()) {
+        setTop(docSnap.data() as Top);
+      }
+    });
+  }, []);
   if (!top) {
     return (
       <IonPage>
@@ -66,9 +63,7 @@ const ViewTop: React.FC<ViewTopProps> = ({ match }) => {
       </IonPage>
     );
   }
-
   const { title: titleTop, items } = top;
-
   return (
     <IonPage>
       <IonHeader>
@@ -111,5 +106,4 @@ const ViewTop: React.FC<ViewTopProps> = ({ match }) => {
     </IonPage>
   );
 };
-
 export default ViewTop;

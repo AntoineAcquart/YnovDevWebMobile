@@ -1,3 +1,4 @@
+import { addDoc, collection, doc, getDoc, getDocs, getFirestore, setDoc } from "firebase/firestore";
 import React, { useState, useEffect, useCallback } from "react";
 import { useDatabase, useFirebaseDatabase } from "..";
 import { defaultList, List, Top } from "../../types";
@@ -8,17 +9,19 @@ const useTopList = () => {
   const [list, setList] = useState<List>([]);
   const { saveList, getList } = useFirebaseDatabase();
 
-  const init = useCallback(
-    () =>
-      getList().then((l) => {
-        if (l && l.length > 0) {
-          setList(l);
-        } else {
-          saveList(defaultList).then(() => setList(defaultList));
+  const init = () => {
+    const db = getFirestore();
+    getDocs(collection(db, "lists")).then((querySnapshot) => {
+      const tops: Top[] = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data) {
+          tops.push(data as Top);
         }
-      }),
-    [getList, saveList]
-  );
+      });
+      setList(tops);
+    });
+  };
   const getLists = useCallback(
     () =>
       getList().then((l) => {
@@ -27,14 +30,22 @@ const useTopList = () => {
     [getList]
   );
 
-  const pushTop = (top: Top): Promise<any> => {
-    const newList = Array.from(list.concat(top));
-    return saveList(newList).then(() => setList(newList));
+  const pushTop = (top: Top) => {
+    const db = getFirestore();
+    return addDoc(collection(db, "lists"), top).then((data) => {
+      // update top with id
+      setDoc(doc(db, "lists", data.id), { ...top, id: data.id });
+    });
   };
   const findTopByTitle = useCallback(
     (title: string) => list.find((l) => l.title === title),
     [list]
   );
+
+  const findTopById = (id: string) => {
+    const db = getFirestore();
+    return getDoc(doc(db, "lists", id))
+  }
 
   useEffect(() => {
     getLists();
@@ -48,6 +59,7 @@ const useTopList = () => {
     findTopByTitle,
     init,
     getLists,
+    findTopById
   };
 };
 

@@ -9,6 +9,7 @@ export type TopItem = {
 export type Top = {
   title: string;
   items: TopItem[];
+  id?: string;
 };
 
 export type List = Top[];
